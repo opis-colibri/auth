@@ -39,6 +39,7 @@ class Session
     {
         if ($user->isAnonymous() ||
             $user->realmId() !== $this->realm->id() ||
+            !$user->isActive() ||
             !$user instanceof UserEntity
         ) {
             return false;
@@ -65,6 +66,7 @@ class Session
     {
         if ($user->isAnonymous() ||
             $user->realmId() !== $this->realm->id() ||
+            !$user->isActive() ||
             session()->get(self::USER_KEY) !== $user->id()
         ) {
             return false;
@@ -82,6 +84,7 @@ class Session
     {
         if ($user->isAnonymous() ||
             $user->realmId() !== $this->realm->id() ||
+            !$user->isActive() ||
             session()->get(self::USER_KEY) !== $user->id()
         ) {
             return '';
