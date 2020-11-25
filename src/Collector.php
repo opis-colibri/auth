@@ -18,6 +18,7 @@
 namespace Opis\Colibri\Module\Auth;
 
 use Opis\Colibri\Collector as BaseCollector;
+use Opis\Colibri\Module\Auth\Collectors\RoleCollector;
 
 class Collector extends BaseCollector
 {

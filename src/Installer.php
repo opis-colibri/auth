@@ -18,6 +18,7 @@
 namespace Opis\Colibri\Module\Auth;
 
 use Opis\Colibri\Installer as BaseInstaller;
+use Opis\Colibri\Module\Auth\Collectors\RoleCollector;
 use Opis\Database\Schema\CreateTable;
 use function Opis\Colibri\{app, config, entityManager, schema};
 
