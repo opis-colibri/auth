@@ -40,3 +40,18 @@ class Collector extends BaseCollector
     }
 }
 ```
+
+### Default realm
+
+The module provides a default `default` realm that uses the default session storage and the 
+`Opis\Colibri\Module\Auth\Collectors\RoleCollector` class to collect roles.
+
+### Realm instances
+
+You can retrieve an instance of a specific realm by using the `get` method.
+
+```php
+$realm = Realm::get('my-realm');
+// Get default realm
+$realm = Realm::get();
+```
