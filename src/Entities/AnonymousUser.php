@@ -167,4 +167,20 @@ final class AnonymousUser implements User
         return $this;
     }
 
+    /**
+     * @inheritDoc
+     */
+    public function roles(): array
+    {
+        return [];
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function setRoles(array $roles): self
+    {
+        return $this;
+    }
+
 }

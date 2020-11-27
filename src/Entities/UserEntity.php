@@ -170,6 +170,24 @@ class UserEntity extends Entity implements MappableEntity, User
     /**
      * @inheritDoc
      */
+    public function roles(): array
+    {
+        return $this->orm()->getColumn('roles');
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function setRoles(array $roles): User
+    {
+        $this->orm()->setColumn('roles', $roles);
+        return $this;
+    }
+
+
+    /**
+     * @inheritDoc
+     */
     public static function mapEntity(EntityMapper $mapper): void
     {
         $mapper->entityName('user');

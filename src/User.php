@@ -150,7 +150,7 @@ interface User
      * Set user's roles
      *
      * @param Role[]|string[] $roles
-     * @return array
+     * @return $this
      */
-    public function setRoles(array $roles): array;
+    public function setRoles(array $roles): self;
 }
