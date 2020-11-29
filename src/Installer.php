@@ -37,7 +37,7 @@ class Installer extends BaseInstaller
             $table->string('collector_class')->notNull();
         });
 
-        schema()->create($users_table, function (CreateTable $table) {
+        schema()->create($users_table, function (CreateTable $table) use ($realms_table) {
             $table->fixed('id', 32)->notNull()->primary();
             $table->fixed('realm_id', 32)->notNull();
             $table->string('name')->notNull();
@@ -51,7 +51,7 @@ class Installer extends BaseInstaller
             $table->unique(['realm_id', 'email']);
 
             $table->foreign('realm_id')
-                ->references('realms', 'id')
+                ->references($realms_table, 'id')
                 ->onDelete('cascade')
                 ->onUpdate('cascade');
         });
