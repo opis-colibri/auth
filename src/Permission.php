@@ -15,38 +15,30 @@
  * limitations under the License.
  * ============================================================================ */
 
-namespace Opis\Colibri\Module\Auth\Collectors;
+namespace Opis\Colibri\Module\Auth;
 
-use Opis\Colibri\Collectors\BaseCollector;
-use Opis\Colibri\Serializable\Collection;
-
-class RoleCollector extends BaseCollector
+final class Permission
 {
-    public function __construct()
+    private string $name, $description;
+
+    public function __construct(string $name, string $description)
     {
-        parent::__construct(new Collection());
+        $this->name = $name;
+        $this->description = $description;
     }
 
-    /**
-     * @param string $id
-     * @param string $name
-     * @param string $description
-     * @return $this
-     */
-    public function register(string $id, string $name, string $description): self
+    public function name(): string
     {
-        $this->data()->add($id, [
-            'name' => $name,
-            'description' => $description
-        ]);
-        return $this;
+        return $this->name;
     }
 
-    /**
-     * @return Collection|object
-     */
-    protected function data(): object
+    public function description(): string
     {
-        return $this->data;
+        return $this->description;
+    }
+
+    public function __toString()
+    {
+        return $this->name;
     }
 }

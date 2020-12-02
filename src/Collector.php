@@ -18,7 +18,10 @@
 namespace Opis\Colibri\Module\Auth;
 
 use Opis\Colibri\Collector as BaseCollector;
+use Opis\Colibri\Collectors\ContractCollector;
+use Opis\Colibri\Module\Auth\Collectors\PermissionCollector;
 use Opis\Colibri\Module\Auth\Collectors\RoleCollector;
+use Opis\Colibri\Module\Auth\Collectors\RolePermissionsCollector;
 
 class Collector extends BaseCollector
 {
@@ -26,7 +29,33 @@ class Collector extends BaseCollector
     {
         $roles
             ->register('authenticated', 'Authenticated', 'Authenticated user')
-            ->register('staff', 'Staff', 'Staff user')
-            ->register('admin', 'Administrator', 'Administrator role');
+            ->register('administrator', 'Administrator', 'Site administrator');
+    }
+
+    public function permissions(PermissionCollector $permissions)
+    {
+        $permissions->register('create-users', 'Create new users');
+        $permissions->register('manage-users', 'Manage existing users');
+        $permissions->register('delete-users', 'Delete existing users');
+        $permissions->register('manage-own-user', 'Manage own user');
+    }
+
+    public function rolePermissions(RolePermissionsCollector $collector)
+    {
+        $collector->register('authenticated', [
+            'manage-own-user',
+        ]);
+
+        $collector->register('administrator', [
+            'create-users',
+            'manage-users',
+            'delete-users',
+            'manage-own-user',
+        ]);
+    }
+
+    public function contracts(ContractCollector $contract)
+    {
+        $contract->singleton(UserSession::class);
     }
 }

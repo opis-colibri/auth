@@ -17,39 +17,34 @@
 
 namespace Opis\Colibri\Module\Auth;
 
-use Opis\Colibri\Module\Auth\Entities\{AnonymousUser, UserEntity};
-use function Opis\Colibri\{entity, entityManager, session, uuid4};
+use function Opis\Colibri\{config, entity, entityManager, session, uuid4};
 
-class Session
+class UserSession
 {
     const USER_KEY = 'authenticated_user';
     const SIGN_OUT_KEY = 'sign_out_key';
 
-    private Realm $realm;
-    private AnonymousUser $anonymous;
     private ?User $user = null;
+    private ?string $sessionName, $ownerId;
 
-    public function __construct(Realm $realm)
+    public function __construct(?string $sessionName = null)
     {
-        $this->realm = $realm;
-        $this->anonymous = new AnonymousUser($realm);
+        $this->sessionName = $sessionName;
     }
 
     public function authenticate(User $user, UserCredentials $credentials): bool
     {
-        if ($user->isAnonymous() ||
-            $user->realmId() !== $this->realm->id() ||
-            !$user->isActive() ||
-            !$user instanceof UserEntity
-        ) {
+        if (!$user->isActive()) {
             return false;
         }
+
+        $session = session($this->sessionName);
 
         if ($credentials->validate($user)) {
             $user->setLastLogin(new \DateTimeImmutable());
             entityManager()->save($user);
-            session()->set(self::USER_KEY, $user->id());
-            session()->set(self::SIGN_OUT_KEY, uuid4());
+            $session->set(self::USER_KEY, $user->id());
+            $session->set(self::SIGN_OUT_KEY, uuid4());
             $this->user = $user;
             return true;
         }
@@ -62,57 +57,64 @@ class Session
         return $this->authenticate($user, new Credentials\PasswordCredentials($password));
     }
 
-    public function signOut(User $user, string $key): bool
+    public function signOut(User $user, string $key, bool $destroy = true): bool
     {
-        if ($user->isAnonymous() ||
-            $user->realmId() !== $this->realm->id() ||
-            !$user->isActive() ||
-            session()->get(self::USER_KEY) !== $user->id()
-        ) {
+        $session = session($this->sessionName);
+
+        if (!$user->isActive() || $session->get(self::USER_KEY) !== $user->id()) {
             return false;
         }
 
-        if (session()->get(self::SIGN_OUT_KEY) !== $key) {
+        if ($session->get(self::SIGN_OUT_KEY) !== $key) {
             return false;
         }
 
         $this->user = null;
-        return session()->destroy();
+        $session->delete(self::USER_KEY);
+        $session->delete(self::SIGN_OUT_KEY);
+
+        return $destroy ? $session->destroy() : true;
     }
 
     public function getSignOutKey(User $user): string
     {
-        if ($user->isAnonymous() ||
-            $user->realmId() !== $this->realm->id() ||
-            !$user->isActive() ||
-            session()->get(self::USER_KEY) !== $user->id()
-        ) {
+        $session = session($this->sessionName);
+
+        if (!$user->isActive() || $session->get(self::USER_KEY) !== $user->id()) {
             return '';
         }
 
         return session()->get(self::SIGN_OUT_KEY);
     }
 
-    public function currentUser(): User
+    public function currentUser($entity = User::class): ?User
     {
-        if ($this->user !== null) {
-            return $this->user;
-        }
-
-        $session = session($this->realm->sessionName());
+        $session = session($this->sessionName);
 
         if ($session->has(self::USER_KEY)) {
-            $user = entity(UserEntity::class)
-                ->where('realm_id')->is($this->realm->id())
-                ->find($session->get(self::USER_KEY));
+            if ($this->user !== null) {
+                return $this->user;
+            }
+
+            $user = entity($entity)->find($session->get(self::USER_KEY));
 
             if ($user !== null) {
                 return $this->user = $user;
             } else {
+                $this->user = null;
                 $session->delete(self::USER_KEY);
             }
         }
 
-        return $this->anonymous;
+        return null;
+    }
+
+    public function getOwnerId(): string
+    {
+        if ($this->ownerId === null) {
+            $this->ownerId = config()->read('opis-colibri.auth.ownerId', '');
+        }
+
+        return $this->ownerId;
     }
 }

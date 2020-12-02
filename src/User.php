@@ -18,139 +18,233 @@
 namespace Opis\Colibri\Module\Auth;
 
 use DateTimeInterface;
+use Opis\ORM\{Core\DataMapper, Entity, EntityMapper, MappableEntity};
+use Opis\Colibri\Module\Auth\Collectors\RoleCollector;
+use function Opis\Colibri\collect;
+use function Opis\Colibri\config;
+use function Opis\Colibri\make;
 
-interface User
+class User extends Entity implements MappableEntity
 {
-    /**
-     * User's id
-     * @return string
-     */
-    public function id(): string;
+    /** @var Permission[]|null */
+    private ?array $permissions = null;
 
     /**
-     * Get user's human-readable name
-     *
      * @return string
      */
-    public function name(): string;
+    public function id(): string
+    {
+        return $this->orm()->getColumn('id');
+    }
 
     /**
-     * Set user's human-readable name
-     *
+     * @return string
+     */
+    public function name(): string
+    {
+        return $this->orm()->getColumn('name');
+    }
+
+    /**
      * @param string $name
      * @return $this
      */
-    public function setName(string $name): self;
+    public function setName(string $name): self
+    {
+        $this->orm()->setColumn('name', $name);
+        return $this;
+    }
 
     /**
-     * Get user's email address
-     *
      * @return string
      */
-    public function email(): string;
+    public function email(): string
+    {
+        return $this->orm()->getColumn('email');
+    }
 
     /**
-     * Set user's unique email address
-     *
      * @param string $email
      * @return $this
      */
-    public function setEmail(string $email): self;
+    public function setEmail(string $email): self
+    {
+        $this->orm()->setColumn('email', $email);
+        return $this;
+    }
 
     /**
-     * Get user's password (hashed)
-     *
-     * @return null|string
+     * @return string|null
      */
-    public function password(): ?string;
+    public function password(): ?string
+    {
+        return $this->orm()->getColumn('password');
+    }
 
     /**
-     * Set user's password
-     * @param string|null $password Password in plain text
-     *
+     * @param string|null $password
      * @return $this
      */
-    public function setPassword(string $password = null): self;
+    public function setPassword(string $password = null): self
+    {
+        $this->orm()->setColumn('password', $password);
+        return $this;
+    }
 
     /**
-     * Registration date
-     *
      * @return DateTimeInterface
      */
-    public function registrationDate(): DateTimeInterface;
+    public function registrationDate(): DateTimeInterface
+    {
+        return $this->orm()->getColumn('registration_date');
+    }
 
     /**
      * @param DateTimeInterface $date
-     *
      * @return $this
      */
-    public function setRegistrationDate(DateTimeInterface $date): self;
+    public function setRegistrationDate(DateTimeInterface $date): self
+    {
+        $this->orm()->setColumn('registration_date', $date);
+        return $this;
+    }
 
     /**
-     * User's last login time
-     *
-     * @return  DateTimeInterface|null
+     * @return DateTimeInterface|null
      */
-    public function lastLogin(): ?DateTimeInterface;
+    public function lastLogin(): ?DateTimeInterface
+    {
+        return $this->orm()->getColumn('last_login');
+    }
 
     /**
      * @param DateTimeInterface $date
-     *
      * @return $this
      */
-    public function setLastLogin(DateTimeInterface $date): self;
-
-    /**
-     * Check if user is active
-     *
-     * @return  boolean
-     */
-    public function isActive(): bool;
-
-    /**
-     * @param bool $value
-     *
-     * @return $this
-     */
-    public function setIsActive(bool $value): self;
+    public function setLastLogin(DateTimeInterface $date): self
+    {
+        $this->orm()->setColumn('last_login', $date);
+        return $this;
+    }
 
     /**
      * @return bool
      */
-    public function isAnonymous(): bool;
+    public function isActive(): bool
+    {
+        return $this->orm()->getColumn('is_active');
+    }
 
     /**
-     * @return string
-     */
-    public function realmId(): string;
-
-    /**
-     * Get user's realm
-     *
-     * @return Realm
-     */
-    public function realm(): Realm;
-
-    /**
-     * Set user's realm
-     *
-     * @param Realm $value
+     * @param bool $value
      * @return $this
      */
-    public function setRealm(Realm $value): self;
+    public function setIsActive(bool $value): self
+    {
+        $this->orm()->setColumn('is_active', $value);
+        return $this;
+    }
 
     /**
-     * User's roles
-     *
+     * @return bool
+     */
+    public function isOwner(): bool
+    {
+        return $this->id() === make(UserSession::class)->getOwnerId();
+    }
+
+    /**
      * @return Role[]
      */
-    public function roles(): array;
+    public function roles(): array
+    {
+        return $this->orm()->getColumn('roles');
+    }
 
     /**
-     * Set user's roles
-     *
-     * @param Role[]|string[] $roles
+     * @param array $roles
      * @return $this
      */
-    public function setRoles(array $roles): self;
+    public function setRoles(array $roles): self
+    {
+        $this->orm()->setColumn('roles', $roles);
+        return $this;
+    }
+
+    /**
+     * @return Permission[]
+     */
+    public function permissions(): array
+    {
+        if ($this->permissions !== null) {
+            return $this->permissions;
+        }
+
+        $permissions = [];
+
+        foreach ($this->roles() as $role) {
+            foreach ($role->permissions() as $permission) {
+                $permissions[] = $permission;
+            }
+        }
+
+        return $this->permissions = $permissions;
+    }
+
+    /**
+     * @param string[]|Permission[] $permissions
+     * @return bool
+     */
+    public function hasPermissions(array $permissions): bool
+    {
+        foreach ($this->permissions() as $user_permission) {
+            foreach ($permissions as $permission) {
+                if ($user_permission->name() !== (string) $permission) {
+                    return false;
+                }
+            }
+        }
+
+        return true;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public static function mapEntity(EntityMapper $mapper): void
+    {
+        $mapper->entityName('user');
+        $mapper->table(config()->read('opis-colibri.auth.users-table', 'users'));
+
+        $mapper->cast([
+            'is_active' => 'boolean',
+            'registration_date' => 'date',
+            'last_login' => '?date',
+            'roles' => 'json-assoc',
+        ]);
+
+        $mapper->setter('roles', static function(array $roles, DataMapper $orm) {
+            $list = [];
+
+            foreach ($roles as $role) {
+                if ($role instanceof Role) {
+                    $list[] = $role->id();
+                }
+            }
+
+            return $list;
+        });
+
+        $mapper->getter('roles', static function(array $roles, DataMapper $orm) {
+            $roleCollection = collect(RoleCollector::class);
+            $list = [];
+            foreach ($roles as $roleId) {
+                if (null !== $role = $roleCollection->get($roleId)) {
+                    $list[] = new Role($roleId, $role['name'], $role['description']);
+                }
+            }
+
+            return $list;
+        });
+    }
 }
