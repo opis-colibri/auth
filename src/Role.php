@@ -19,26 +19,19 @@ namespace Opis\Colibri\Module\Auth;
 
 use Opis\Colibri\Module\Auth\Collectors\PermissionCollector;
 use Opis\Colibri\Module\Auth\Collectors\RolePermissionsCollector;
-use Opis\Colibri\Serializable\Collection;
 use function Opis\Colibri\collect;
 
 final class Role
 {
-    private string $id, $name, $description;
+    private string $name, $description;
 
     /** @var Permission[]|null */
     private ?array $permissions = null;
 
-    public function __construct(string $id, string $name, string $description)
+    public function __construct(string $id, string $description)
     {
-        $this->id = $id;
-        $this->name = $name;
+        $this->name = $id;
         $this->description = $description;
-    }
-
-    public function id(): string
-    {
-        return $this->id;
     }
 
     public function name(): string
@@ -49,6 +42,11 @@ final class Role
     public function description(): string
     {
         return $this->description;
+    }
+
+    public function __toString()
+    {
+        return $this->name;
     }
 
     /**
@@ -65,7 +63,7 @@ final class Role
         $permissionCollection = collect(PermissionCollector::class);
         $rolePermissions = collect(RolePermissionsCollector::class);
 
-        if (null !== $list = $rolePermissions->get($this->id)) {
+        if (null !== $list = $rolePermissions->get($this->name)) {
             foreach ($list as $permission) {
                 if ($permissionCollection->has($permission)) {
                     $permissions[] = new Permission($permission, $permissionCollection->get($permission));

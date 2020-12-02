@@ -28,8 +28,8 @@ class Collector extends BaseCollector
     public function roles(RoleCollector $roles)
     {
         $roles
-            ->register('authenticated', 'Authenticated', 'Authenticated user')
-            ->register('administrator', 'Administrator', 'Site administrator');
+            ->register('authenticated', 'Authenticated user')
+            ->register('administrator', 'Site administrator');
     }
 
     public function permissions(PermissionCollector $permissions)

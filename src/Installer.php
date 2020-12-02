@@ -18,8 +18,11 @@
 namespace Opis\Colibri\Module\Auth;
 
 use Opis\Colibri\Installer as BaseInstaller;
+use Opis\Colibri\Module\Auth\Collectors\PermissionCollector;
+use Opis\Colibri\Module\Auth\Collectors\RoleCollector;
+use Opis\Colibri\Module\Auth\Collectors\RolePermissionsCollector;
 use Opis\Database\Schema\CreateTable;
-use function Opis\Colibri\{config, schema};
+use function Opis\Colibri\{config, registerCollector, schema, unregisterCollector};
 
 class Installer extends BaseInstaller
 {
@@ -37,6 +40,20 @@ class Installer extends BaseInstaller
             $table->boolean('is_active')->notNull()->defaultValue(false);
             $table->binary('roles')->notNull();
         });
+    }
+
+    public function enable()
+    {
+        registerCollector(RoleCollector::class, 'Collect roles');
+        registerCollector(PermissionCollector::class, 'Collect permissions');
+        registerCollector(RolePermissionsCollector::class, 'Collect role permissions');
+    }
+
+    public function disable()
+    {
+        unregisterCollector(RoleCollector::class);
+        unregisterCollector(PermissionCollector::class);
+        unregisterCollector(RolePermissionsCollector::class);
     }
 
     public function uninstall()

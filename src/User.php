@@ -227,9 +227,7 @@ class User extends Entity implements MappableEntity
             $list = [];
 
             foreach ($roles as $role) {
-                if ($role instanceof Role) {
-                    $list[] = $role->id();
-                }
+                $list[] = @(string) $role;
             }
 
             return $list;
@@ -240,7 +238,7 @@ class User extends Entity implements MappableEntity
             $list = [];
             foreach ($roles as $roleId) {
                 if (null !== $role = $roleCollection->get($roleId)) {
-                    $list[] = new Role($roleId, $role['name'], $role['description']);
+                    $list[] = new Role($roleId, $role);
                 }
             }
 
