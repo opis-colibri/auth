@@ -20,6 +20,9 @@ namespace Opis\Colibri\Module\Auth\Collectors;
 use Opis\Colibri\Collectors\BaseCollector;
 use Opis\Colibri\Serializable\Collection;
 
+/**
+ * @method Collection data()
+ */
 class RoleCollector extends BaseCollector
 {
     public function __construct()
@@ -36,13 +39,5 @@ class RoleCollector extends BaseCollector
     {
         $this->data()->add($name, $description);
         return $this;
-    }
-
-    /**
-     * @return Collection|object
-     */
-    protected function data(): object
-    {
-        return $this->data;
     }
 }

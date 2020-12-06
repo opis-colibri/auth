@@ -29,7 +29,7 @@ class AccessMiddleware extends Middleware
         $user = make(UserSession::class)->currentUser();
 
         if ($user === null) {
-            return httpError(401, $isJsonRequest ? [] : null);
+            return httpError(401, $isJsonRequest ? (object) [] : null);
         }
 
         if ($user->isOwner()) {
@@ -37,7 +37,7 @@ class AccessMiddleware extends Middleware
         }
 
         if (!$user->isActive() || !$user->hasPermissions($permissions)) {
-            return httpError(403, $isJsonRequest ? [] : null);
+            return httpError(403, $isJsonRequest ? (object) [] : null);
         }
 
         return $this->next();
