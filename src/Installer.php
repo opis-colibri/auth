@@ -17,14 +17,12 @@
 
 namespace Opis\Colibri\Module\Auth;
 
-use Opis\Colibri\Installer as BaseInstaller;
-use Opis\Colibri\Module\Auth\Collectors\PermissionCollector;
-use Opis\Colibri\Module\Auth\Collectors\RoleCollector;
-use Opis\Colibri\Module\Auth\Collectors\RolePermissionsCollector;
+use Opis\Colibri\Installer as ModuleInstaller;
 use Opis\Database\Schema\Blueprint;
+use Opis\Colibri\Module\Auth\Collectors\{PermissionCollector, RoleCollector, RolePermissionsCollector};
 use function Opis\Colibri\{config, registerCollector, schema, unregisterCollector};
 
-class Installer extends BaseInstaller
+class Installer extends ModuleInstaller
 {
     public function install()
     {

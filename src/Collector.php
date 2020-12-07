@@ -18,14 +18,12 @@
 namespace Opis\Colibri\Module\Auth;
 
 use Opis\Colibri\Attributes\Module;
-use Opis\Colibri\Collector as BaseCollector;
+use Opis\Colibri\Collector as ModuleCollector;
 use Opis\Colibri\Collectors\ContractCollector;
-use Opis\Colibri\Module\Auth\Collectors\PermissionCollector;
-use Opis\Colibri\Module\Auth\Collectors\RoleCollector;
-use Opis\Colibri\Module\Auth\Collectors\RolePermissionsCollector;
+use Opis\Colibri\Module\Auth\Collectors\{PermissionCollector, RoleCollector, RolePermissionsCollector};
 
 #[Module('Auth module', installer: Installer::class)]
-class Collector extends BaseCollector
+class Collector extends ModuleCollector
 {
     public function roles(RoleCollector $roles)
     {
