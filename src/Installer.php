@@ -21,7 +21,7 @@ use Opis\Colibri\Installer as BaseInstaller;
 use Opis\Colibri\Module\Auth\Collectors\PermissionCollector;
 use Opis\Colibri\Module\Auth\Collectors\RoleCollector;
 use Opis\Colibri\Module\Auth\Collectors\RolePermissionsCollector;
-use Opis\Database\Schema\CreateTable;
+use Opis\Database\Schema\Blueprint;
 use function Opis\Colibri\{config, registerCollector, schema, unregisterCollector};
 
 class Installer extends BaseInstaller
@@ -30,7 +30,7 @@ class Installer extends BaseInstaller
     {
         $users_table = config()->read('opis-colibri.auth.users-table', 'users');
 
-        schema()->create($users_table, function (CreateTable $table) {
+        schema()->create($users_table, function (Blueprint $table) {
             $table->fixed('id', 32)->notNull()->primary();
             $table->string('name')->notNull();
             $table->string('email')->notNull()->unique();
