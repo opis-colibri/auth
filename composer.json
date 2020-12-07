@@ -35,13 +35,9 @@
     "minimum-stability": "dev",
     "prefer-stable": true,
     "extra": {
-        "module": {
-            "tile": "Auth module",
-            "collector": "Opis\\Colibri\\Module\\Auth\\Collector",
-            "installer": "Opis\\Colibri\\Module\\AUth\\Installer"
-        },
         "branch-alias": {
             "dev-master": "2020.x-dev"
-        }
+        },
+        "collector": "Opis\\Colibri\\Module\\Auth\\Collector"
     }
 }
