@@ -83,7 +83,7 @@ class User extends Entity implements MappableEntity
      * @param string|null $password
      * @return $this
      */
-    public function setPassword(string $password = null): self
+    public function setPassword(?string $password = null): self
     {
         $this->orm()->setColumn('password', $password);
         return $this;
