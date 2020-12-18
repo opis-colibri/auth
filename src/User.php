@@ -221,6 +221,10 @@ class User extends Entity implements MappableEntity
             'roles' => 'json-assoc',
         ]);
 
+        $mapper->setter('password', static function (string $password) {
+            return password_hash($password, PASSWORD_DEFAULT);
+        });
+
         $mapper->setter('roles', static function(array $roles, DataMapper $orm) {
             $list = [];
 
