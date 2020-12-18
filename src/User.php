@@ -20,9 +20,7 @@ namespace Opis\Colibri\Module\Auth;
 use DateTimeInterface;
 use Opis\ORM\{Core\DataMapper, Entity, EntityMapper, MappableEntity};
 use Opis\Colibri\Module\Auth\Collectors\RoleCollector;
-use function Opis\Colibri\collect;
-use function Opis\Colibri\config;
-use function Opis\Colibri\make;
+use function Opis\Colibri\{collect, config, make, uuid4};
 
 class User extends Entity implements MappableEntity
 {
@@ -215,7 +213,7 @@ class User extends Entity implements MappableEntity
     {
         $mapper->entityName('user');
         $mapper->table(config()->read('opis-colibri.auth.users-table', 'users'));
-
+        $mapper->primaryKeyGenerator(static fn () => uuid4(''));
         $mapper->cast([
             'is_active' => 'boolean',
             'registration_date' => 'date',

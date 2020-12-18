@@ -34,7 +34,7 @@ class Installer extends ModuleInstaller
             $table->string('email')->notNull()->unique();
             $table->string('password');
             $table->dateTime('registration_date')->notNull();
-            $table->dateTime('last_login');
+            $table->dateTime('last_login')->defaultValue(null);
             $table->boolean('is_active')->notNull()->defaultValue(false);
             $table->binary('roles')->notNull();
         });
