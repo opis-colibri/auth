@@ -25,6 +25,11 @@ class AccessMiddleware extends Middleware
 {
     public function __invoke(Request $request, array $permissions = []): Response
     {
+        if ($request->getMethod() === 'OPTIONS') {
+            // No credentials are sent with OPTIONS
+            return $this->next();
+        }
+
         $isJsonRequest = $this->isJsonRequest($request);
         $user = make(UserSession::class)->currentUser();
 
