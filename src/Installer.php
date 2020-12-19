@@ -32,7 +32,7 @@ class Installer extends ModuleInstaller
             $table->fixed('id', 32)->notNull()->primary();
             $table->string('name')->notNull();
             $table->string('email')->notNull()->unique();
-            $table->string('password');
+            $table->string('password')->defaultValue(null);
             $table->dateTime('registration_date')->notNull();
             $table->dateTime('last_login')->defaultValue(null);
             $table->boolean('is_active')->notNull()->defaultValue(false);

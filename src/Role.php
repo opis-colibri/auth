@@ -17,20 +17,20 @@
 
 namespace Opis\Colibri\Module\Auth;
 
-use Opis\Colibri\Module\Auth\Collectors\PermissionCollector;
-use Opis\Colibri\Module\Auth\Collectors\RolePermissionsCollector;
+use Stringable;
+use Opis\Colibri\Module\Auth\Collectors\{PermissionCollector, RolePermissionsCollector};
 use function Opis\Colibri\collect;
 
-final class Role
+final class Role implements Stringable
 {
     private string $name, $description;
 
     /** @var Permission[]|null */
     private ?array $permissions = null;
 
-    public function __construct(string $id, string $description)
+    public function __construct(string $name, string $description)
     {
-        $this->name = $id;
+        $this->name = $name;
         $this->description = $description;
     }
 
@@ -44,7 +44,7 @@ final class Role
         return $this->description;
     }
 
-    public function __toString()
+    public function __toString(): string
     {
         return $this->name;
     }

@@ -17,7 +17,9 @@
 
 namespace Opis\Colibri\Module\Auth;
 
-final class Permission
+use Stringable;
+
+final class Permission implements Stringable
 {
     private string $name, $description;
 
@@ -37,7 +39,7 @@ final class Permission
         return $this->description;
     }
 
-    public function __toString()
+    public function __toString(): string
     {
         return $this->name;
     }

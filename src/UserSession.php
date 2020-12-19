@@ -25,7 +25,8 @@ class UserSession
     const SIGN_OUT_KEY = 'sign_out_key';
 
     private ?User $user = null;
-    private ?string $sessionName, $ownerId;
+    private ?string $sessionName;
+    private ?string $ownerId = null;
 
     public function __construct(?string $sessionName = null)
     {
