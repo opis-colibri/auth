@@ -17,8 +17,8 @@
 
 namespace Opis\Colibri\Module\Auth;
 
-use Opis\Routing\Middleware;
-use Opis\Http\{Request, Response};
+use Opis\Colibri\Routing\Middleware;
+use Opis\Colibri\Http\{Request, Response};
 use function Opis\Colibri\{httpError, make};
 
 class AccessMiddleware extends Middleware
