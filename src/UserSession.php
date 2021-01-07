@@ -17,6 +17,7 @@
 
 namespace Opis\Colibri\Module\Auth;
 
+use DateTimeImmutable;
 use function Opis\Colibri\{config, entity, entityManager, session, uuid4};
 
 class UserSession
@@ -42,7 +43,7 @@ class UserSession
         $session = session($this->sessionName);
 
         if ($credentials->validate($user)) {
-            $user->setLastLogin(new \DateTimeImmutable());
+            $user->setLastLogin(new DateTimeImmutable());
             entityManager()->save($user);
             $session->set(self::USER_KEY, $user->id());
             $session->set(self::SIGN_OUT_KEY, uuid4());

@@ -18,7 +18,7 @@
 namespace Opis\Colibri\Module\Auth;
 
 use DateTimeInterface;
-use Opis\ORM\{Core\DataMapper, Entity, EntityMapper, MappableEntity};
+use Opis\ORM\{Entity, EntityMapper, MappableEntity};
 use Opis\Colibri\Module\Auth\Collectors\RoleCollector;
 use function Opis\Colibri\{collect, config, make, uuid4};
 
@@ -225,7 +225,7 @@ class User extends Entity implements MappableEntity
             return password_hash($password, PASSWORD_DEFAULT);
         });
 
-        $mapper->setter('roles', static function(array $roles, DataMapper $orm) {
+        $mapper->setter('roles', static function(array $roles /*, DataMapper $orm*/) {
             $list = [];
 
             foreach ($roles as $role) {
@@ -235,7 +235,7 @@ class User extends Entity implements MappableEntity
             return $list;
         });
 
-        $mapper->getter('roles', static function(array $roles, DataMapper $orm) {
+        $mapper->getter('roles', static function(array $roles /*, DataMapper $orm*/) {
             $roleCollection = collect(RoleCollector::class);
             $list = [];
             foreach ($roles as $roleId) {
