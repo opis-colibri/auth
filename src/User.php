@@ -19,9 +19,9 @@ namespace Opis\Colibri\Module\Auth;
 
 use DateTimeInterface;
 use Opis\ORM\{DataMapper, Entity, EntityMapper, MappableEntity};
-use function Opis\Colibri\{config, uuid4};
+use function Opis\Colibri\{config, uuid4, entity};
 
-class User extends Entity implements MappableEntity
+final class User extends Entity implements MappableEntity
 {
     /** @var Permission[]|null */
     private ?array $permissions = null;
@@ -211,6 +211,19 @@ class User extends Entity implements MappableEntity
         }
 
         return true;
+    }
+
+    public static function get(string $id): ?User
+    {
+        return entity(self::class)->find($id);
+    }
+
+    public function getByEmail(string $email, string $realm = 'default'): ?User
+    {
+        return entity(self::class)
+                ->where('realm')->is($realm)
+                ->where('email')->is($email)
+                ->get();
     }
 
     /**
