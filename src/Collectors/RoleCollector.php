@@ -23,7 +23,7 @@ use Opis\Colibri\Serializable\Collection;
 /**
  * @method Collection data()
  */
-class RoleCollector extends BaseCollector
+abstract class RoleCollector extends BaseCollector
 {
     public function __construct()
     {

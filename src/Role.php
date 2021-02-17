@@ -18,7 +18,7 @@
 namespace Opis\Colibri\Module\Auth;
 
 use Stringable;
-use Opis\Colibri\Module\Auth\Collectors\{PermissionCollector, RolePermissionsCollector};
+use Opis\Colibri\Serializable\Collection;
 use function Opis\Colibri\collect;
 
 final class Role implements Stringable
@@ -28,8 +28,11 @@ final class Role implements Stringable
     /** @var Permission[]|null */
     private ?array $permissions = null;
 
-    public function __construct(string $name, string $description)
+    private Realm $realm;
+
+    public function __construct(Realm $realm, string $name, string $description)
     {
+        $this->realm = $realm;
         $this->name = $name;
         $this->description = $description;
     }
@@ -60,13 +63,14 @@ final class Role implements Stringable
 
         $permissions = [];
 
-        $permissionCollection = collect(PermissionCollector::class);
-        $rolePermissions = collect(RolePermissionsCollector::class);
+        $permissionCollection = $this->realm->permissions();
+        /** @var Collection $rolePermissions */
+        $rolePermissions = collect($this->realm->rolePermissionCollector());
 
         if (null !== $list = $rolePermissions->get($this->name)) {
             foreach ($list as $permission) {
-                if ($permissionCollection->has($permission)) {
-                    $permissions[] = new Permission($permission, $permissionCollection->get($permission));
+                if (isset($permissionCollection[$permission])) {
+                    $permissions[] = $permissionCollection[$permission];
                 }
             }
         }

@@ -18,9 +18,8 @@
 namespace Opis\Colibri\Module\Auth;
 
 use DateTimeInterface;
-use Opis\ORM\{Entity, EntityMapper, MappableEntity};
-use Opis\Colibri\Module\Auth\Collectors\RoleCollector;
-use function Opis\Colibri\{collect, config, make, uuid4};
+use Opis\ORM\{DataMapper, Entity, EntityMapper, MappableEntity};
+use function Opis\Colibri\{config, uuid4};
 
 class User extends Entity implements MappableEntity
 {
@@ -33,6 +32,22 @@ class User extends Entity implements MappableEntity
     public function id(): string
     {
         return $this->orm()->getColumn('id');
+    }
+
+    public function realmId(): string
+    {
+        return $this->orm()->getColumn('realm_id');
+    }
+
+    public function realm(): Realm
+    {
+        return Realm::get($this->realmId());
+    }
+
+    public function setRealm(Realm $realm): self
+    {
+        $this->orm()->setRelated('realm', $realm);
+        return $this;
     }
 
     /**
@@ -144,14 +159,6 @@ class User extends Entity implements MappableEntity
     }
 
     /**
-     * @return bool
-     */
-    public function isOwner(): bool
-    {
-        return $this->id() === make(UserSession::class)->getOwnerId();
-    }
-
-    /**
      * @return Role[]
      */
     public function roles(): array
@@ -220,6 +227,7 @@ class User extends Entity implements MappableEntity
             'last_login' => '?date',
             'roles' => 'json-assoc',
         ]);
+        $mapper->relation('realm')->belongsTo(Realm::class);
 
         $mapper->setter('password', static function (string $password) {
             return password_hash($password, PASSWORD_DEFAULT);
@@ -235,12 +243,16 @@ class User extends Entity implements MappableEntity
             return $list;
         });
 
-        $mapper->getter('roles', static function(array $roles /*, DataMapper $orm*/) {
-            $roleCollection = collect(RoleCollector::class);
+        $mapper->getter('roles', static function(array $roles , DataMapper $orm) {
+            $realm = Realm::get($orm->getColumn('realm_id'));
+
             $list = [];
+
+            $roleCollection = $realm->roles();
+
             foreach ($roles as $roleId) {
-                if (null !== $role = $roleCollection->get($roleId)) {
-                    $list[] = new Role($roleId, $role);
+                if (isset($roleCollection[$roleId])) {
+                    $list[] = $roleCollection[$roleId];
                 }
             }
 

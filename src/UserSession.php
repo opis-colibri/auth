@@ -27,7 +27,6 @@ class UserSession
 
     private ?User $user = null;
     private ?string $sessionName;
-    private ?string $ownerId = null;
 
     public function __construct(?string $sessionName = null)
     {
@@ -109,14 +108,5 @@ class UserSession
         }
 
         return null;
-    }
-
-    public function getOwnerId(): string
-    {
-        if ($this->ownerId === null) {
-            $this->ownerId = config()->read('opis-colibri.auth.ownerId', '');
-        }
-
-        return $this->ownerId;
     }
 }

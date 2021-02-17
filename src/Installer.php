@@ -19,17 +19,28 @@ namespace Opis\Colibri\Module\Auth;
 
 use Opis\Colibri\Installer as ModuleInstaller;
 use Opis\Database\Schema\Blueprint;
-use Opis\Colibri\Module\Auth\Collectors\{PermissionCollector, RoleCollector, RolePermissionsCollector};
-use function Opis\Colibri\{config, registerCollector, schema, unregisterCollector};
+use function Opis\Colibri\{config, schema};
 
 class Installer extends ModuleInstaller
 {
     public function install()
     {
-        $users_table = config()->read('opis-colibri.auth.users-table', 'users');
+        $realm_table = config()->read('opis-colibri.auth.realm-table', 'realms');
+        $user_table = config()->read('opis-colibri.auth.user-table', 'users');
 
-        schema()->create($users_table, function (Blueprint $table) {
+        schema()->create($realm_table, function (Blueprint $table) {
+            $table->string('id', 32)->notNull()->primary();
+            $table->string('name')->notNull();
+            $table->string('description')->notNull();
+            $table->string('session_name');
+            $table->string('permission_collector')->notNull();
+            $table->string('role_collector')->notNull();
+            $table->string('role_permission_collector')->notNull();
+        });
+
+        schema()->create($user_table, function (Blueprint $table) use ($realm_table) {
             $table->fixed('id', 32)->notNull()->primary();
+            $table->string('realm_id', 32)->notNull()->index();
             $table->string('name')->notNull();
             $table->string('email')->notNull()->unique();
             $table->string('password')->defaultValue(null);
@@ -37,27 +48,20 @@ class Installer extends ModuleInstaller
             $table->dateTime('last_login')->defaultValue(null);
             $table->boolean('is_active')->notNull()->defaultValue(false);
             $table->binary('roles')->notNull();
+
+            $table->foreign('realm_id')
+                ->references($realm_table)
+                ->onUpdate('cascade')
+                ->onDelete('cascade');
         });
-    }
-
-    public function enable()
-    {
-        registerCollector(RoleCollector::class, 'Collect roles');
-        registerCollector(PermissionCollector::class, 'Collect permissions');
-        registerCollector(RolePermissionsCollector::class, 'Collect role permissions');
-    }
-
-    public function disable()
-    {
-        unregisterCollector(RoleCollector::class);
-        unregisterCollector(PermissionCollector::class);
-        unregisterCollector(RolePermissionsCollector::class);
     }
 
     public function uninstall()
     {
-        $users_table = config()->read('opis-colibri.auth.users-table', 'users');
+        $realm_table = config()->read('opis-colibri.auth.realm-table', 'realms');
+        $user_table = config()->read('opis-colibri.auth.user-table', 'users');
 
-        schema()->drop($users_table);
+        schema()->drop($user_table);
+        schema()->drop($realm_table);
     }
 }

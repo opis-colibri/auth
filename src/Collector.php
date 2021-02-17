@@ -25,37 +25,5 @@ use Opis\Colibri\Module\Auth\Collectors\{PermissionCollector, RoleCollector, Rol
 #[Module('Auth module', installer: Installer::class)]
 class Collector extends ModuleCollector
 {
-    public function roles(RoleCollector $roles)
-    {
-        $roles
-            ->register('authenticated', 'Authenticated user')
-            ->register('administrator', 'Site administrator');
-    }
 
-    public function permissions(PermissionCollector $permissions)
-    {
-        $permissions->register('create-users', 'Create new users');
-        $permissions->register('manage-users', 'Manage existing users');
-        $permissions->register('delete-users', 'Delete existing users');
-        $permissions->register('manage-own-user', 'Manage own user');
-    }
-
-    public function rolePermissions(RolePermissionsCollector $collector)
-    {
-        $collector->register('authenticated', [
-            'manage-own-user',
-        ]);
-
-        $collector->register('administrator', [
-            'create-users',
-            'manage-users',
-            'delete-users',
-            'manage-own-user',
-        ]);
-    }
-
-    public function contracts(ContractCollector $contract)
-    {
-        $contract->singleton(UserSession::class);
-    }
 }

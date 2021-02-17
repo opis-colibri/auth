@@ -23,22 +23,20 @@ use function Opis\Colibri\{httpError, make};
 
 class AccessMiddleware extends Middleware
 {
-    public function __invoke(Request $request, array $permissions = []): Response
+    public function __invoke(Request $request, string $realm = null, array $permissions = []): Response
     {
-        if ($request->getMethod() === 'OPTIONS') {
+        if ($realm === null || $request->getMethod() === 'OPTIONS') {
             // No credentials are sent with OPTIONS
             return $this->next();
         }
 
+        $realm = Realm::get($realm);
+
         $isJsonRequest = $this->isJsonRequest($request);
-        $user = make(UserSession::class)->currentUser();
+        $user = $realm->userSession()->currentUser();
 
         if ($user === null) {
             return httpError(401, $isJsonRequest ? (object) [] : null);
-        }
-
-        if ($user->isOwner()) {
-            return $this->next();
         }
 
         if (!$user->isActive() || !$user->hasPermissions($permissions)) {
