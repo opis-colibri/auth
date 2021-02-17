@@ -19,96 +19,37 @@ namespace Opis\Colibri\Module\Auth;
 
 use RuntimeException;
 use Opis\Colibri\Serializable\Collection;
-use Opis\ORM\{Entity, EntityMapper, MappableEntity};
-use function Opis\Colibri\{collect, config, entity};
+use Opis\Colibri\Module\Auth\Collectors\{PermissionCollector, RoleCollector, RealmCollector};
+use function Opis\Colibri\{collect};
 
-final class Realm extends Entity implements MappableEntity
+final class Realm
 {
     private ?array $roles = null;
     private ?array $permissions = null;
     private ?UserSession $userSession = null;
+    private string $name;
+    private ?string $sessionName;
 
-    public function id(): string
+    public function __construct(string $name, ?string $sessionName)
     {
-        return $this->orm()->getColumn('id');
-    }
-
-    public function setId(string $value): self
-    {
-        $this->orm()->setColumn('id', $value);
-        return $this;
+        $this->name = $name;
+        $this->sessionName = $sessionName;
     }
 
     public function name(): string
     {
-        return $this->orm()->getColumn('name');
-    }
-
-    public function setName(string $value): self
-    {
-        $this->orm()->setColumn('name', $value);
-        return $this;
-    }
-
-    public function description(): string
-    {
-        return $this->orm()->getColumn('id');
-    }
-
-    public function setDescription(string $value): self
-    {
-        $this->orm()->setColumn('id', $value);
-        return $this;
+        return $this->name;
     }
 
     public function sessionName(): ?string
     {
-        return $this->orm()->getColumn('session_name');
-    }
-
-    public function setSessionName(?string $value): self
-    {
-        $this->orm()->setColumn('session_name', $value);
-        return $this;
-    }
-
-    public function permissionCollector(): string
-    {
-        return $this->orm()->getColumn('permission_collector');
-    }
-
-    public function setPermissionCollector(string $value): self
-    {
-        $this->orm()->setColumn('permission_collector', $value);
-        return $this;
-    }
-
-    public function roleCollector(): string
-    {
-        return $this->orm()->getColumn('role_collector');
-    }
-
-    public function setRoleCollector(string $value): self
-    {
-        $this->orm()->setColumn('role_collector', $value);
-        return $this;
-    }
-
-    public function rolePermissionCollector(): string
-    {
-        return $this->orm()->getColumn('role_permission_collector');
-    }
-
-    public function setRolePermissionCollector(string $value): self
-    {
-        $this->orm()->setColumn('role_permission_collector', $value);
-        return $this;
+        return $this->sessionName;
     }
 
     public function userSession(): UserSession
     {
         if ($this->userSession === null) {
-            $this->userSession = new UserSession($this->sessionName());
+            $this->userSession = new UserSession($this->sessionName);
         }
 
         return $this->userSession;
@@ -121,7 +62,11 @@ final class Realm extends Entity implements MappableEntity
     {
         if ($this->roles === null) {
             /** @var Collection $roleCollection */
-            $roleCollection = collect($this->roleCollector());
+            $roleCollection = collect(RoleCollector::class)->get($this->name);
+
+            if ($roleCollection === null) {
+                return $this->roles = [];
+            }
 
             $roles = [];
             foreach ($roleCollection->getEntries() as $name => $description) {
@@ -141,7 +86,7 @@ final class Realm extends Entity implements MappableEntity
     {
         if ($this->permissions === null) {
             /** @var Collection $permissionCollection */
-            $permissionCollection = collect($this->permissionCollector());
+            $permissionCollection = collect(PermissionCollector::class)->get($this->name);
 
             $permissions = [];
 
@@ -155,36 +100,17 @@ final class Realm extends Entity implements MappableEntity
         return $this->permissions;
     }
 
-    public static function get(string $id): Realm
+    public static function get(string $name): Realm
     {
         static $realmCache = [];
 
-        if (isset($realmCache[$id])) {
-            return $realmCache[$id];
+        if (!isset($realmCache[$name])) {
+            if (null === $sessionName = collect(RealmCollector::class)->get($name)) {
+                throw new RuntimeException("Invalid realm name ". $name);
+            }
+            $realmCache[$name] = new self($name, $sessionName);
         }
 
-        $realm = entity(self::class)->find($id);
-
-        if (!$realm) {
-            throw new RuntimeException("Invalid realm id ". $id);
-        }
-
-        $realmCache[$id] = $realm;
-
-        return $realm;
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public static function mapEntity(EntityMapper $mapper): void
-    {
-        $mapper->entityName('realm');
-        $mapper->table(config()->read('opis-colibri.auth.realms-table', 'realms'));
-        $mapper->cast([
-            'session_name' => '?string'
-        ]);
-
-        $mapper->relation('users')->hasMany(User::class);
+        return $realmCache[$name];
     }
 }

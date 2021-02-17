@@ -34,20 +34,20 @@ class User extends Entity implements MappableEntity
         return $this->orm()->getColumn('id');
     }
 
-    public function realmId(): string
+    public function realmName(): string
     {
-        return $this->orm()->getColumn('realm_id');
+        return $this->orm()->getColumn('realm');
+    }
+
+    public function setRealmName(string $value): self
+    {
+        $this->orm()->setColumn('realm', $value);
+        return $this;
     }
 
     public function realm(): Realm
     {
-        return Realm::get($this->realmId());
-    }
-
-    public function setRealm(Realm $realm): self
-    {
-        $this->orm()->setRelated('realm', $realm);
-        return $this;
+        return Realm::get($this->realmName());
     }
 
     /**
@@ -227,7 +227,6 @@ class User extends Entity implements MappableEntity
             'last_login' => '?date',
             'roles' => 'json-assoc',
         ]);
-        $mapper->relation('realm')->belongsTo(Realm::class);
 
         $mapper->setter('password', static function (string $password) {
             return password_hash($password, PASSWORD_DEFAULT);
@@ -244,7 +243,7 @@ class User extends Entity implements MappableEntity
         });
 
         $mapper->getter('roles', static function(array $roles , DataMapper $orm) {
-            $realm = Realm::get($orm->getColumn('realm_id'));
+            $realm = Realm::get($orm->getColumn('realm'));
 
             $list = [];
 

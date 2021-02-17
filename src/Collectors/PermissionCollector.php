@@ -23,21 +23,22 @@ use Opis\Colibri\Serializable\Collection;
 /**
  * @method Collection data()
  */
-abstract class PermissionCollector extends BaseCollector
+class PermissionCollector extends BaseCollector
 {
     public function __construct()
     {
         parent::__construct(new Collection());
     }
 
-    /**
-     * @param string $name
-     * @param string $description
-     * @return $this
-     */
-    public function register(string $name, string $description): self
+    public function register(string $name, string $description, string $realm = 'default'): self
     {
-        $this->data()->add($name, $description);
+        if (null === $realmCollection = $this->data()->get($realm)) {
+            $realmCollection = new Collection();
+            $this->data()->add($realm, $realmCollection);
+        }
+
+        $realmCollection->add($name, $description);
+
         return $this;
     }
 }

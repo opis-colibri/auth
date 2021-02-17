@@ -23,9 +23,9 @@ use function Opis\Colibri\{httpError, make};
 
 class AccessMiddleware extends Middleware
 {
-    public function __invoke(Request $request, string $realm = null, array $permissions = []): Response
+    public function __invoke(Request $request, string $realm = 'default', array $permissions = []): Response
     {
-        if ($realm === null || $request->getMethod() === 'OPTIONS') {
+        if ($request->getMethod() === 'OPTIONS') {
             // No credentials are sent with OPTIONS
             return $this->next();
         }

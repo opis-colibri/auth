@@ -1,6 +1,6 @@
 <?php
 /* ===========================================================================
- * Copyright 2020 Zindex Software
+ * Copyright 2021 Zindex Software
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,25 +23,20 @@ use Opis\Colibri\Serializable\Collection;
 /**
  * @method Collection data()
  */
-class RolePermissionsCollector extends BaseCollector
+class RealmCollector extends BaseCollector
 {
     public function __construct()
     {
         parent::__construct(new Collection());
     }
 
-
-    public function register(string $role, array $permissions, string $realm = 'default'): self
+    public function register(string $name, ?string $sessionName = null): self
     {
-        if (null === $realmCollection = $this->data()->get($realm)) {
-            $realmCollection = new Collection();
-            $this->data()->add($realm, $realmCollection);
+        if (strlen($name) > 32) {
+            throw new \RuntimeException("Realm name too long");
         }
 
-        $currentPermissions = array_flip($realmCollection->get($role, []));
-        $currentPermissions += array_flip($permissions);
-        $realmCollection->add($role, array_keys($currentPermissions));
-
+        $this->data()->add($name, $sessionName);
         return $this;
     }
 }
