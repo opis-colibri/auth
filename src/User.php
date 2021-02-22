@@ -21,7 +21,7 @@ use DateTimeInterface;
 use Opis\ORM\{DataMapper, Entity, EntityMapper, MappableEntity};
 use function Opis\Colibri\{config, uuid4, entity};
 
-final class User extends Entity implements MappableEntity
+class User extends Entity implements MappableEntity
 {
     /** @var Permission[]|null */
     private ?array $permissions = null;
