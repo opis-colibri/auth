@@ -30,10 +30,12 @@ final class UserSession
 
     private ?User $user = null;
     private ?string $sessionName;
+    private string $userClass;
     private ?Session $session = null;
 
-    public function __construct(?string $sessionName = null)
+    public function __construct(string $userClass, ?string $sessionName = null)
     {
+        $this->userClass = $userClass;
         $this->sessionName = $sessionName;
     }
 
@@ -92,7 +94,7 @@ final class UserSession
         return session()->get(self::SIGN_OUT_KEY);
     }
 
-    public function currentUser($entity = User::class): ?User
+    public function currentUser(): ?User
     {
         $session = $this->session();
 
@@ -101,7 +103,7 @@ final class UserSession
                 return $this->user;
             }
 
-            $user = entity($entity)->find($session->get(self::USER_KEY));
+            $user = entity($this->userClass)->find($session->get(self::USER_KEY));
 
             if ($user !== null) {
                 return $this->user = $user;

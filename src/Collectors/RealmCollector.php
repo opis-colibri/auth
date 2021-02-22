@@ -18,6 +18,7 @@
 namespace Opis\Colibri\Module\Auth\Collectors;
 
 use Opis\Colibri\Collectors\BaseCollector;
+use Opis\Colibri\Module\Auth\User;
 use Opis\Colibri\Serializable\Collection;
 
 /**
@@ -30,13 +31,16 @@ class RealmCollector extends BaseCollector
         parent::__construct(new Collection());
     }
 
-    public function register(string $name, ?string $sessionName = null): self
+    public function register(string $name, string $userClass = User::class, ?string $sessionName = null): self
     {
         if (strlen($name) > 32) {
             throw new \RuntimeException("Realm name too long");
         }
 
-        $this->data()->add($name, $sessionName);
+        $this->data()->add($name, [
+            'userClass' => $userClass,
+            'sessionName' => $sessionName,
+        ]);
         return $this;
     }
 }

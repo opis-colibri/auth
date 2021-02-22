@@ -28,17 +28,24 @@ final class Realm
     private ?array $permissions = null;
     private ?UserSession $userSession = null;
     private string $name;
+    private string $userClass;
     private ?string $sessionName;
 
-    public function __construct(string $name, ?string $sessionName)
+    public function __construct(string $name, string $userClass, ?string $sessionName)
     {
         $this->name = $name;
+        $this->userClass = $userClass;
         $this->sessionName = $sessionName;
     }
 
     public function name(): string
     {
         return $this->name;
+    }
+
+    public function userClass(): string
+    {
+        return $this->userClass;
     }
 
     public function sessionName(): ?string
@@ -49,7 +56,7 @@ final class Realm
     public function userSession(): UserSession
     {
         if ($this->userSession === null) {
-            $this->userSession = new UserSession($this->sessionName);
+            $this->userSession = new UserSession($this->userClass, $this->sessionName);
         }
 
         return $this->userSession;
@@ -105,10 +112,10 @@ final class Realm
         static $realmCache = [];
 
         if (!isset($realmCache[$name])) {
-            if (null === $sessionName = collect(RealmCollector::class)->get($name)) {
+            if (null === $realmInfo = collect(RealmCollector::class)->get($name)) {
                 throw new RuntimeException("Invalid realm name ". $name);
             }
-            $realmCache[$name] = new self($name, $sessionName);
+            $realmCache[$name] = new self($name, $realmInfo['userClass'], $realmInfo['sessionName']);
         }
 
         return $realmCache[$name];
