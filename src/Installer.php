@@ -38,6 +38,7 @@ class Installer extends ModuleInstaller
             $table->dateTime('last_login')->defaultValue(null);
             $table->boolean('is_active')->notNull()->defaultValue(false);
             $table->binary('roles')->notNull();
+            $table->binary('data')->size('big');
 
             $table->unique(['realm', 'email']);
         });

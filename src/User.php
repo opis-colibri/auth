@@ -148,6 +148,17 @@ final class User extends Entity implements MappableEntity
         return $this->orm()->getColumn('is_active');
     }
 
+    public function data(): ?object
+    {
+        return $this->orm()->getColumn('data');
+    }
+
+    public function setData(?object $data): self
+    {
+        $this->orm()->setColumn('data', 'data');
+        return $this;
+    }
+
     /**
      * @param bool $value
      * @return $this
@@ -239,6 +250,7 @@ final class User extends Entity implements MappableEntity
             'registration_date' => 'date',
             'last_login' => '?date',
             'roles' => 'json-assoc',
+            'data' => '?json',
         ]);
 
         $mapper->setter('password', static function (string $password) {
