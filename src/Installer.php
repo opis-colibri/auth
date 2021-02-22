@@ -30,7 +30,7 @@ class Installer extends ModuleInstaller
 
         schema()->create($user_table, function (Blueprint $table) {
             $table->fixed('id', 32)->notNull()->primary();
-            $table->string('realm', 32)->defaultValue('default')->index();
+            $table->string('realm')->defaultValue('default')->index();
             $table->string('name')->notNull();
             $table->string('email')->notNull();
             $table->string('password')->defaultValue(null);
