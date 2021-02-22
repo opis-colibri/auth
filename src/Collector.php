@@ -33,7 +33,7 @@ class Collector extends ModuleCollector
     {
         $roles
             ->register('authenticated', 'Authenticated user')
-            ->register('administrator', 'Site administrator');
+            ->register('administrator', 'Website administrator');
     }
 
     public function permissions(PermissionCollector $permissions)
@@ -47,14 +47,14 @@ class Collector extends ModuleCollector
     public function rolePermissions(RolePermissionsCollector $collector)
     {
         $collector->register('authenticated', [
-            'manage-own-user',
+            'manage-own-account',
         ]);
 
         $collector->register('administrator', [
             'create-users',
             'manage-users',
             'delete-users',
-            'manage-own-user',
+            'manage-own-account',
         ]);
     }
 }

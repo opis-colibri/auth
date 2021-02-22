@@ -18,15 +18,19 @@
 namespace Opis\Colibri\Module\Auth;
 
 use DateTimeImmutable;
-use function Opis\Colibri\{config, entity, entityManager, session, uuid4};
+use RuntimeException;
+use Opis\Colibri\Collectors\SessionCollector;
+use Opis\Colibri\Session\Session;
+use function Opis\Colibri\{app, collect, entity, entityManager, session, uuid4};
 
-class UserSession
+final class UserSession
 {
     const USER_KEY = 'authenticated_user';
     const SIGN_OUT_KEY = 'sign_out_key';
 
     private ?User $user = null;
     private ?string $sessionName;
+    private ?Session $session = null;
 
     public function __construct(?string $sessionName = null)
     {
@@ -39,7 +43,7 @@ class UserSession
             return false;
         }
 
-        $session = session($this->sessionName);
+        $session = $this->session();
 
         if ($credentials->validate($user)) {
             $user->setLastLogin(new DateTimeImmutable());
@@ -60,7 +64,7 @@ class UserSession
 
     public function signOut(User $user, string $key, bool $destroy = true): bool
     {
-        $session = session($this->sessionName);
+        $session = $this->session();
 
         if (!$user->isActive() || $session->get(self::USER_KEY) !== $user->id()) {
             return false;
@@ -79,7 +83,7 @@ class UserSession
 
     public function getSignOutKey(User $user): string
     {
-        $session = session($this->sessionName);
+        $session = $this->session();
 
         if (!$user->isActive() || $session->get(self::USER_KEY) !== $user->id()) {
             return '';
@@ -90,7 +94,7 @@ class UserSession
 
     public function currentUser($entity = User::class): ?User
     {
-        $session = session($this->sessionName);
+        $session = $this->session();
 
         if ($session->has(self::USER_KEY)) {
             if ($this->user !== null) {
@@ -108,5 +112,35 @@ class UserSession
         }
 
         return null;
+    }
+
+    private function session(): Session
+    {
+        if ($this->session !== null) {
+            return $this->session;
+        }
+
+        if ($this->sessionName === null) {
+            return $this->session = session();
+        }
+
+        $collector = collect(SessionCollector::class);
+
+        if ($collector->has($this->sessionName)) {
+            return $this->session = session($this->sessionName);
+        }
+
+        if (!preg_match('/^[a-z0-9-A-Z_-]*:[a-z0-9A-Z_-]+$/', $this->sessionName)) {
+            throw new RuntimeException('Invalid session name ' . $this->sessionName);
+        }
+
+        [$name, ] = explode(':', $this->sessionName);
+
+        $sessionInstance = session($name === '' ? null : $name);
+        $handler = $sessionInstance->getHandler();
+        $config = $sessionInstance->getConfig();
+        $config['cookie_name'] = $this->sessionName;
+
+        return $this->session = new Session(app()->getSessionCookieContainer(), $handler, $config);
     }
 }
