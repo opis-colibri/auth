@@ -107,7 +107,7 @@ final class Realm
         return $this->permissions;
     }
 
-    public static function get(string $name): Realm
+    public static function get(string $name = 'default'): Realm
     {
         static $realmCache = [];
 
